@@ -1,0 +1,20 @@
+service gluu-server-3.1.1 stop
+apt-get remove gluu-server-3.1.1
+rm -rf /opt/gluu-server-3.1.1.save
+apt-get install gluu-server-3.1.1
+service gluu-server-3.1.1 start
+service gluu-server-3.1.1 login
+
+Clienten auf gluu seite hinzufügen:
+
+neuen clienten anlegen
+name: kastelClient
+pw:fraunhofer
+Redirect Login URIs: http://localhost:3000/callback  
+Scopes: alle
+Response Types: alle 
+Grant Types: alle
+jetzt adden
+inum in server.js bei clientID einfügen
+
+
