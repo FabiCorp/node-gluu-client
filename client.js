@@ -176,7 +176,7 @@ app.get('/permission', function(req, res) {
       res.send(ticket);
     });
   } else {
-    res.send("No accesstoken/resourceInfo available, please start authorization process with /login.");
+    res.send("No AccessToken/ResourceInfo available, please start authorization process with /login.");
   }
 });
 
@@ -196,6 +196,7 @@ app.get('/getHearthRate', function(req, res) {
           });
           console.log('Request accepted, data received');
       });
+      res.send("Saved file!");
   } else {
     const options = {
         url: 'http://localhost:4000/hearthRate',
@@ -205,6 +206,7 @@ app.get('/getHearthRate', function(req, res) {
         umaTicket = JSON.parse(body).ticket;
         console.log("Received UMA-Ticket to request RPT");
       });
+      res.send("Received UMA-Ticket to request RPT")
   }
 });
 
@@ -220,7 +222,7 @@ app.get('/userInfo', function(request, res) {
       res.end();
     });
   } else {
-    res.send("No accesstoken available, please start authorization process with /login.");
+    res.send("No AccessToken available, please start authorization process with /login.");
   }
 });
 
