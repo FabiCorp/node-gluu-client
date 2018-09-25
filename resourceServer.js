@@ -6,6 +6,7 @@ const express    = require('express');
 const bodyParser = require("body-parser");
 const Issuer     = require('openid-client').Issuer;
 const fs         = require('fs');
+const config     = require('./config.js');
 
 /* #############################################################################
  *                                variables
@@ -14,7 +15,7 @@ const fs         = require('fs');
 var app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(express.static(__dirname + '/spectral'));
+// app.use(express.static(__dirname + '/spectral'));
 // disable rejection if unauthorized host TODO: find a better solution
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 // accesstoken
@@ -34,27 +35,27 @@ var scopeQueries;
 // create Issuer
 
 const gluuIssuer = new Issuer({
-    issuer: 'https://153.96.9.227',
-    authorization_endpoint: 'https://153.96.9.227/oxauth/restv1/authorize/',
-    token_endpoint: 'https://153.96.9.227/oxauth/restv1/token',
-    userinfo_endpoint: 'https://153.96.9.227/oxauth/restv1/userinfo',
-    jwks_uri: 'https://153.96.9.227/oxauth/restv1/jwks',
-    resource_registration_endpoint:	"https://153.96.9.227/oxauth/restv1/host/rsrc/resource_set",
-    permission_endpoint:	"https://153.96.9.227/oxauth/restv1/host/rsrc_pr",
-    rpt_endpoint: 'https://153.96.9.227/oxauth/restv1/rpt/status'
+  issuer: config.gluuServerAddress,
+  authorization_endpoint: config.gluuServerAddress + '/oxauth/restv1/authorize/',
+  token_endpoint: config.gluuServerAddress + '/oxauth/restv1/token',
+  userinfo_endpoint: config.gluuServerAddress + '/oxauth/restv1/userinfo',
+  jwks_uri: config.gluuServerAddress + '/oxauth/restv1/jwks',
+  resource_registration_endpoint:	config.gluuServerAddress + '/oxauth/restv1/host/rsrc/resource_set',
+  permission_endpoint:	config.gluuServerAddress + '/oxauth/restv1/host/rsrc_pr',
+  rpt_endpoint: config.gluuServerAddress + '/oxauth/restv1/rpt/status'
 }); // => Issuer
 
 // create client with given id and secret
 const client = new gluuIssuer.Client({
-    client_id: '@!528C.1560.B13F.70BA!0001!67D4.C944!0008!1E6C.37AA.C62E.B429',
-    client_secret: 'fraunhofer'
+    client_id: config.resourceServerId,
+    client_secret: config.resourceServerSecret
 }); // => Client
 
 // build the correct
 // TODO: What is nonce? => association between id-token and client
 function auth() {
     return client.authorizationPost({
-    redirect_uri: 'http://localhost:4000/callback',
+    redirect_uri: config.resourceServerAddress + '/callback',
     scope: "email openid uma_protection",
     state: '1234',
     nonce: '1234',
@@ -66,15 +67,15 @@ function auth() {
  *                                routing
  * ###########################################################################*/
 
-// path to index of the client
-app.get ('/', function(req, res) {
-    res.sendFile(__dirname + "/spectral/index.html")
-});
-
-// select scopes to send to Authorization Server
-app.get ('/scopes', function(req, res) {
-    res.sendFile(__dirname + "/spectral/scopes.html")
-});
+// // path to index of the client
+// app.get ('/', function(req, res) {
+//     res.sendFile(__dirname + "/spectral/index.html")
+// });
+//
+// // select scopes to send to Authorization Server
+// app.get ('/scopes', function(req, res) {
+//     res.sendFile(__dirname + "/spectral/scopes.html")
+// });
 
 // to initiate a new openid process
 // http://localhost:3000/login
@@ -87,12 +88,12 @@ app.get('/login', function (req, res) {
 app.get('/callback', function(request, res) {
   const state = "1234";
   const nonce = "1234";
-  client.authorizationCallback('http://localhost:4000/callback',
+  client.authorizationCallback(config.resourceServerAddress + '/callback',
   request.query, {state, nonce})
   .then(function (tokenSet) {
     console.log("Login performed correctly, received TokenSet");
     tokenS = tokenSet;
-    res.sendFile(__dirname + "/spectral/elements.html")
+    res.send(tokenS);
   });
 });
 
@@ -104,7 +105,7 @@ app.get('/resource_sets', function(req, res) {
       resourceId = resp.replace(/\"|\[|\]/g, '');
       console.log("Available Resources with Resource_ID: " + resourceId);
       res.setHeader('Content-Type', 'text/html');
-      res.send(getHtml("http://localhost:4000/resource_sets/"
+      res.send(getHtml(config.resourceServerAddress + '/resource_sets/'
       + resourceId, resourceId));
       res.end()
     });
@@ -208,8 +209,8 @@ app.get('/hearthRate', function(req, res) {
           console.log("Sending UMA-Ticket to Client");
           umaTicket = JSON.parse(ticket);
           res.status(401);
-          res.setHeader('WWW-Authenticate', 'UMA realm="153.96.9.227"');
-          var uri = { as_uri: "https://153.96.9.227" }
+          res.setHeader('WWW-Authenticate', 'UMA realm=' + config.umaRealm);
+          var uri = { as_uri: config.gluuServerAddess }
           var data = Object.assign(umaTicket, uri)
           res.send(data);
           res.end();
@@ -287,8 +288,8 @@ app.post('/measurementData', function(request, res) {
 
 });
 
-app.listen(4000, function () {
-  console.log('Listen on port 4000!');
+app.listen(config.resourceServerPort, function () {
+  console.log('Listen on port ' + config.resourceServerPort);
 });
 
 /* #############################################################################
