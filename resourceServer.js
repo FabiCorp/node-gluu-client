@@ -2,15 +2,18 @@
  *                           require-statements
  * ###########################################################################*/
 
-const express = require('express');
-const Issuer = require('openid-client').Issuer;
-const fs = require('fs');
+const express    = require('express');
+const bodyParser = require("body-parser");
+const Issuer     = require('openid-client').Issuer;
+const fs         = require('fs');
 
 /* #############################################################################
  *                                variables
  * ###########################################################################*/
 
 var app = express();
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 app.use(express.static(__dirname + '/spectral'));
 // disable rejection if unauthorized host TODO: find a better solution
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
@@ -226,7 +229,7 @@ app.get('/hearthRate', function(req, res) {
           scope = permissions.resource_scopes[0];
           if(scope === "hearthRate") {
             console.log("Correct Scope found, sending requested data");
-            var rate = fs.readFileSync('/home/fabi/git/MiBand2/hearthRate.txt', 'utf8');
+            var rate = fs.readFileSync('measurementData.txt', 'utf8');
             res.send(rate);
             res.end();
           } else {
@@ -272,6 +275,16 @@ app.get('/userInfo', function(request, res) {
   } else {
     res.send("No AccessToken available, please start authorization process with /login.");
   }
+});
+
+app.post('/measurementData', function(request, res) {
+  var measurement = request.body.data;
+  fs.writeFile('measurementData.txt', measurement, function (err) {
+    if (err) throw err;
+      console.log('Saved file!');
+      res.end();
+    });
+
 });
 
 app.listen(4000, function () {
