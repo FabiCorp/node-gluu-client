@@ -60,15 +60,16 @@ The measurement data from the MiBand2-Project needs to successfully reached the 
 
 ### resourceServer
 
-1. /login
+1. /login (to obtain PAT)
 2. /registerResource (only call when not already registered)
-3. /resourceSet and /resourceSet/[id]
+3. /resourceSet and /resourceSet/[id] (to get the ResourceID for the UMA-Authorization Process)  
 
+After registering the Resource and having all relevant information:
 ### clientServer
 
-1. /login
-2. /hearthRate
-3. /umaToken
-4. /hearthRate
+1. /login (to obtain PAT)
+2. /hearthRate (to request authorization for requested resource)
+3. /umaToken (exchange UMA-Ticket to RPT)
+4. /hearthRate (present RPT to gain access for requested Resource)
 
 Now the **hearthRate.txt** should be created with the same data as in **measurementData.txt**
