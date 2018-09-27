@@ -11,9 +11,9 @@ module.exports.clientServerAddress = "http://localhost:3000";
 module.exports.clientServerPort = "3000";
 
 // edit gluu-client information for clientServer
-module.exports.clientServerId = "@!528C.1560.B13F.70BA!0001!67D4.C944!0008!7E24.ED29.6287.16B2";
+module.exports.clientServerId = "@!A1E5.7B89.B377.E840!0001!6F6F.ACD0!0008!34A8.6AF6.9AE0.5F80";
 module.exports.clientServerSecret = "fraunhofer";
 
 // edit gluu-client information for resourceServer
-module.exports.resourceServerId = "@!528C.1560.B13F.70BA!0001!67D4.C944!0008!1E6C.37AA.C62E.B429";
+module.exports.resourceServerId = "@!A1E5.7B89.B377.E840!0001!6F6F.ACD0!0008!FC43.524B.B930.0E17";
 module.exports.resourceServerSecret = "fraunhofer";

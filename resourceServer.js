@@ -56,7 +56,7 @@ const client = new gluuIssuer.Client({
 function auth() {
     return client.authorizationPost({
     redirect_uri: config.resourceServerAddress + '/callback',
-    scope: "email openid uma_protection",
+    scope: "openid uma_protection",
     state: '1234',
     nonce: '1234',
     response_type: 'code',
@@ -107,7 +107,6 @@ app.get('/resource_sets', function(req, res) {
       res.setHeader('Content-Type', 'text/html');
       res.send(getHtml(config.resourceServerAddress + '/resource_sets/'
       + resourceId, resourceId));
-      res.end()
     });
   } else {
       console.log("No AccessToken available!");
@@ -132,7 +131,6 @@ app.get('/resource_sets/:id', function(req, res) {
       permissionBody.resource_id = resourceInfo["_id"];
       permissionBody.resource_scopes = resourceInfo["resource_scopes"];
       console.log("Successfully received information about Resource with ResourceID: " + id);
-      res.end();
     });
   } else {
     console.log("No ResourceId or AccessToken available!");
@@ -220,6 +218,7 @@ app.get('/hearthRate', function(req, res) {
       }
     } else {
       var rpt = authHeader.replace('Bearer ', '');
+      console.log(rpt);
       client.introspectUMA(tokenS, rpt)
       .then(function (status) {
         status = JSON.parse(status);
@@ -238,6 +237,8 @@ app.get('/hearthRate', function(req, res) {
           }
         } else {
           console.log("RPT is not active");
+          res.send("inactive")
+          console.log(status);
         }
       });
     }
