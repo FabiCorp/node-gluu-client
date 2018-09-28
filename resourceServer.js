@@ -219,13 +219,12 @@ app.get('/hearthRate', function(req, res) {
     } else {
       var rpt = authHeader.replace('Bearer ', '');
       console.log(rpt);
-      client.introspectUMA(tokenS, rpt)
-      .then(function (status) {
-        status = JSON.parse(status);
-        active = status.active;
+      client.introspectUMA(tokenS, rpt).then(function(body) {
+        body = JSON.parse(body);
+        active = body.active;
         if(active) {
           console.log("RPT is active, proceeding to check scopes");
-          permissions = status.permissions[0];
+          permissions = body.permissions[0];
           scope = permissions.resource_scopes[0];
           if(scope === "hearthRate") {
             console.log("Correct Scope found, sending requested data");
@@ -238,9 +237,9 @@ app.get('/hearthRate', function(req, res) {
         } else {
           console.log("RPT is not active");
           res.send("inactive")
-          console.log(status);
         }
       });
+
     }
   } else {
     console.log("No AccessToken available!");
