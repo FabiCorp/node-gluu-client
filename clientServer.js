@@ -6,13 +6,14 @@ const express    = require('express');
 const Issuer     = require('openid-client').Issuer;
 const request    = require('request');
 const fs         = require('fs');
-const config     = require('./config.js');
+const configIni     = require('config.ini');
 
 
 /* #############################################################################
  *                                variables
  * ###########################################################################*/
 
+var config = configIni.load('config.ini');
 var app = express();
 // app.use(express.static(__dirname + '/spectral'));
 // disable rejection if unauthorized host TODO: find a better solution
@@ -34,27 +35,27 @@ var scopeQueries;
 // create Issuer
 
 const gluuIssuer = new Issuer({
-    issuer: config.gluuServerAddress,
-    authorization_endpoint: config.gluuServerAddress + '/oxauth/restv1/authorize/',
-    token_endpoint: config.gluuServerAddress + '/oxauth/restv1/token',
-    userinfo_endpoint: config.gluuServerAddress + '/oxauth/restv1/userinfo',
-    jwks_uri: config.gluuServerAddress + '/oxauth/restv1/jwks',
-    resource_registration_endpoint:	config.gluuServerAddress + '/oxauth/restv1/host/rsrc/resource_set',
-    permission_endpoint:	config.gluuServerAddress + '/oxauth/restv1/host/rsrc_pr',
-    rpt_endpoint: config.gluuServerAddress + '/oxauth/restv1/rpt/status'
+    issuer: config.init.gluuServerAddress,
+    authorization_endpoint: config.init.gluuServerAddress + '/oxauth/restv1/authorize/',
+    token_endpoint: config.init.gluuServerAddress + '/oxauth/restv1/token',
+    userinfo_endpoint: config.init.gluuServerAddress + '/oxauth/restv1/userinfo',
+    jwks_uri: config.init.gluuServerAddress + '/oxauth/restv1/jwks',
+    resource_registration_endpoint:	config.init.gluuServerAddress + '/oxauth/restv1/host/rsrc/resource_set',
+    permission_endpoint:	config.init.gluuServerAddress + '/oxauth/restv1/host/rsrc_pr',
+    rpt_endpoint: config.init.gluuServerAddress + '/oxauth/restv1/rpt/status'
 }); // => Issuer
 
 // create client with given id and secret
 const client = new gluuIssuer.Client({
-  client_id: config.clientServerId,
-  client_secret: config.clientServerSecret
+  client_id: config.init.clientServerId,
+  client_secret: config.init.clientServerSecret
 }); // => Client
 
 // build the correct
 // TODO: What is nonce? => association between id-token and client
 function auth() {
     return client.authorizationPost({
-    redirect_uri: config.clientServerAddress + '/callback',
+    redirect_uri: config.init.clientServerAddress + '/callback',
     scope: "openid uma_protection",
     state: '1234',
     nonce: '1234',
@@ -87,7 +88,7 @@ app.get('/login', function (req, res) {
 app.get('/callback', function(request, res) {
   const state = "1234";
   const nonce = "1234";
-  client.authorizationCallback(config.clientServerAddress+ '/callback',
+  client.authorizationCallback(config.init.clientServerAddress+ '/callback',
   request.query, {state, nonce})
   .then(function (tokenSet) {
     console.log("Login performed correctly, received TokenSet");
@@ -104,7 +105,7 @@ app.get('/resource_sets', function(req, res) {
       resourceId = resp.replace(/\"|\[|\]/g, '');
       console.log("Available Resources with Resource_ID: " + resourceId);
       res.setHeader('Content-Type', 'text/html');
-      res.send(getHtml(config.clientServerAddress + 'resource_sets/'
+      res.send(getHtml(config.init.clientServerAddress + 'resource_sets/'
       + resourceId, resourceId));
     });
   } else {
@@ -183,7 +184,7 @@ app.get('/permission', function(req, res) {
 app.get('/getHearthRate', function(req, res) {
   if (rpt) {
     const options = {
-        url: config.resourceServerAddress + '/hearthRate',
+        url: config.init.resourceServerAddress + '/hearthRate',
         method: 'GET',
         headers: {
           'Authorization': 'Bearer ' + rpt
@@ -199,7 +200,7 @@ app.get('/getHearthRate', function(req, res) {
       res.send("Saved file!");
   } else {
     const options = {
-        url: config.resourceServerAddress + '/hearthRate',
+        url: config.init.resourceServerAddress + '/hearthRate',
         method: 'GET',
     };
       request(options, function(err, res, body) {
@@ -226,8 +227,8 @@ app.get('/userInfo', function(request, res) {
   }
 });
 
-app.listen(config.clientServerPort, function () {
-  console.log('Listen on port ' + config.clientServerPort);
+app.listen(config.init.clientServerPort, function () {
+  console.log('Listen on port ' + config.init.clientServerPort);
 });
 
 /* #############################################################################

@@ -6,12 +6,13 @@ const express    = require('express');
 const bodyParser = require("body-parser");
 const Issuer     = require('openid-client').Issuer;
 const fs         = require('fs');
-const config     = require('./config.js');
+const configIni     = require('config.ini');
 
 /* #############################################################################
  *                                variables
  * ###########################################################################*/
 
+var config = configIni.load('config.ini');
 var app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -35,27 +36,27 @@ var scopeQueries;
 // create Issuer
 
 const gluuIssuer = new Issuer({
-  issuer: config.gluuServerAddress,
-  authorization_endpoint: config.gluuServerAddress + '/oxauth/restv1/authorize/',
-  token_endpoint: config.gluuServerAddress + '/oxauth/restv1/token',
-  userinfo_endpoint: config.gluuServerAddress + '/oxauth/restv1/userinfo',
-  jwks_uri: config.gluuServerAddress + '/oxauth/restv1/jwks',
-  resource_registration_endpoint:	config.gluuServerAddress + '/oxauth/restv1/host/rsrc/resource_set',
-  permission_endpoint:	config.gluuServerAddress + '/oxauth/restv1/host/rsrc_pr',
-  rpt_endpoint: config.gluuServerAddress + '/oxauth/restv1/rpt/status'
+  issuer: config.init.gluuServerAddress,
+  authorization_endpoint: config.init.gluuServerAddress + '/oxauth/restv1/authorize/',
+  token_endpoint: config.init.gluuServerAddress + '/oxauth/restv1/token',
+  userinfo_endpoint: config.init.gluuServerAddress + '/oxauth/restv1/userinfo',
+  jwks_uri: config.init.gluuServerAddress + '/oxauth/restv1/jwks',
+  resource_registration_endpoint:	config.init.gluuServerAddress + '/oxauth/restv1/host/rsrc/resource_set',
+  permission_endpoint:	config.init.gluuServerAddress + '/oxauth/restv1/host/rsrc_pr',
+  rpt_endpoint: config.init.gluuServerAddress + '/oxauth/restv1/rpt/status'
 }); // => Issuer
 
 // create client with given id and secret
 const client = new gluuIssuer.Client({
-    client_id: config.resourceServerId,
-    client_secret: config.resourceServerSecret
+    client_id: config.init.resourceServerId,
+    client_secret: config.init.resourceServerSecret
 }); // => Client
 
 // build the correct
 // TODO: What is nonce? => association between id-token and client
 function auth() {
     return client.authorizationPost({
-    redirect_uri: config.resourceServerAddress + '/callback',
+    redirect_uri: config.init.resourceServerAddress + '/callback',
     scope: "openid uma_protection",
     state: '1234',
     nonce: '1234',
@@ -88,7 +89,7 @@ app.get('/login', function (req, res) {
 app.get('/callback', function(request, res) {
   const state = "1234";
   const nonce = "1234";
-  client.authorizationCallback(config.resourceServerAddress + '/callback',
+  client.authorizationCallback(config.init.resourceServerAddress + '/callback',
   request.query, {state, nonce})
   .then(function (tokenSet) {
     console.log("Login performed correctly, received TokenSet");
@@ -105,7 +106,7 @@ app.get('/resource_sets', function(req, res) {
       resourceId = resp.replace(/\"|\[|\]/g, '');
       console.log("Available Resources with Resource_ID: " + resourceId);
       res.setHeader('Content-Type', 'text/html');
-      res.send(getHtml(config.resourceServerAddress + '/resource_sets/'
+      res.send(getHtml(config.init.resourceServerAddress + '/resource_sets/'
       + resourceId, resourceId));
     });
   } else {
@@ -143,7 +144,6 @@ app.get('/umaToken', function(req, res) {
   if(umaTicket){
     client.getUmaToken(umaTicket)
     .then(function (umaTokenSet) {
-      console.log(umaTokenSet);
       res.setHeader('Content-Type', 'application/json');
       res.send(umaTokenSet);
       rpt = (umaTokenSet).access_token;
@@ -207,8 +207,8 @@ app.get('/hearthRate', function(req, res) {
           console.log("Sending UMA-Ticket to Client");
           umaTicket = JSON.parse(ticket);
           res.status(401);
-          res.setHeader('WWW-Authenticate', 'UMA realm=' + config.umaRealm);
-          var uri = { as_uri: config.gluuServerAddess }
+          res.setHeader('WWW-Authenticate', 'UMA realm=' + config.init.umaRealm);
+          var uri = { as_uri: config.init.gluuServerAddess }
           var data = Object.assign(umaTicket, uri)
           res.send(data);
           res.end();
@@ -218,7 +218,6 @@ app.get('/hearthRate', function(req, res) {
       }
     } else {
       var rpt = authHeader.replace('Bearer ', '');
-      console.log(rpt);
       client.introspectUMA(tokenS, rpt).then(function(body) {
         body = JSON.parse(body);
         active = body.active;
@@ -288,8 +287,8 @@ app.post('/measurementData', function(request, res) {
 
 });
 
-app.listen(config.resourceServerPort, function () {
-  console.log('Listen on port ' + config.resourceServerPort);
+app.listen(config.init.resourceServerPort, function () {
+  console.log('Listen on port ' + config.init.resourceServerPort);
 });
 
 /* #############################################################################
