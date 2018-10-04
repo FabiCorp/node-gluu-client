@@ -6,7 +6,7 @@ const express    = require('express');
 const Issuer     = require('openid-client').Issuer;
 const request    = require('request');
 const fs         = require('fs');
-const configIni     = require('config.ini');
+const configIni  = require('config.ini');
 
 
 /* #############################################################################
@@ -66,16 +66,6 @@ function auth() {
 /* #############################################################################
  *                                routing
  * ###########################################################################*/
-
-// // path to index of the client
-// app.get ('/', function(req, res) {
-//     res.sendFile(__dirname + "/spectral/index.html")
-// });
-//
-// // select scopes to send to Authorization Server
-// app.get ('/scopes', function(req, res) {
-//     res.sendFile(__dirname + "/spectral/scopes.html")
-// });
 
 // to initiate a new openid process
 // http://localhost:3000/login

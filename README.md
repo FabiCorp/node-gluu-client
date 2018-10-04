@@ -62,7 +62,8 @@ The measurement data from the MiBand2-Project needs to successfully reached the 
 
 1. /login (to obtain PAT)
 2. /registerResource (only call when not already registered)
-3. /resourceSet and /resourceSet/[id] (to get the ResourceID for the UMA-Authorization Process)  
+3. Login to the Gluu Interface and add an Authorization Policy (UMA_RPT_POLICY) to the hearthRate UMA scope 
+4. /resourceSet and /resourceSet/[id] (to get the ResourceID for the UMA-Authorization Process)  
 
 After registering the Resource and having all relevant information:
 ### clientServer

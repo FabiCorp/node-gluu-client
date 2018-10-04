@@ -6,7 +6,7 @@ const express    = require('express');
 const bodyParser = require("body-parser");
 const Issuer     = require('openid-client').Issuer;
 const fs         = require('fs');
-const configIni     = require('config.ini');
+const configIni  = require('config.ini');
 
 /* #############################################################################
  *                                variables
@@ -67,16 +67,6 @@ function auth() {
 /* #############################################################################
  *                                routing
  * ###########################################################################*/
-
-// // path to index of the client
-// app.get ('/', function(req, res) {
-//     res.sendFile(__dirname + "/spectral/index.html")
-// });
-//
-// // select scopes to send to Authorization Server
-// app.get ('/scopes', function(req, res) {
-//     res.sendFile(__dirname + "/spectral/scopes.html")
-// });
 
 // to initiate a new openid process
 // http://localhost:3000/login
@@ -167,7 +157,8 @@ app.get('/rpt', function(req, res) {
 
 app.get('/resourceRegistration', function(req, res) {
   if(tokenS) {
-    client.registerResource(tokenS, getResource())
+    var resource = fs.readFileSync('resource.json')
+    client.registerResource(tokenS, resource)
     .then(function (status) {
       res.setHeader('Content-Type', 'application/json');
       res.send(status);
@@ -295,7 +286,7 @@ app.listen(config.init.resourceServerPort, function () {
  *                              helper methods
  * ###########################################################################*/
 
-function getHtml(link,id) {
+function getHtml(link, id) {
   return `<!DOCTYPE html>
 <head>
 <title>Requesting Authorization</title>
@@ -305,18 +296,4 @@ function getHtml(link,id) {
 <a href="` + link + `">Get Infomation for the ID</a>
 </body>
 </html>`;
-};
-
-function getResource() {
-  return `{
-   "_id":"KX3A-39WE",
-   "resource_scopes":[
-      "hearthRate"
-   ],
-   "icon_uri":"http://www.example.com/icons/sharesocial.png",
-   "name":"Hearth Rate Service",
-   "type":"http://www.example.com/rsrcs/socialstream/140-compatible",
-   "exp": 1419356238,
-   "iat": 1419350238
-}`;
 };
