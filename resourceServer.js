@@ -4,9 +4,9 @@
 
 const express    = require('express');
 const bodyParser = require("body-parser");
-const Issuer     = require('openid-client').Issuer;
 const fs         = require('fs');
 const configIni  = require('config.ini');
+const core       = require('./core.js');
 
 /* #############################################################################
  *                                variables
@@ -35,34 +35,13 @@ var rpt;
 var scopeQueries;
 // create Issuer
 
-const gluuIssuer = new Issuer({
-  issuer: config.init.gluuServerAddress,
-  authorization_endpoint: config.init.gluuServerAddress + '/oxauth/restv1/authorize/',
-  token_endpoint: config.init.gluuServerAddress + '/oxauth/restv1/token',
-  userinfo_endpoint: config.init.gluuServerAddress + '/oxauth/restv1/userinfo',
-  jwks_uri: config.init.gluuServerAddress + '/oxauth/restv1/jwks',
-  resource_registration_endpoint:	config.init.gluuServerAddress + '/oxauth/restv1/host/rsrc/resource_set',
-  permission_endpoint:	config.init.gluuServerAddress + '/oxauth/restv1/host/rsrc_pr',
-  rpt_endpoint: config.init.gluuServerAddress + '/oxauth/restv1/rpt/status'
-}); // => Issuer
+const gluuIssuer = core.getIssuer;  // => Issuer
 
 // create client with given id and secret
 const client = new gluuIssuer.Client({
     client_id: config.init.resourceServerId,
     client_secret: config.init.resourceServerSecret
 }); // => Client
-
-// build the correct
-// TODO: What is nonce? => association between id-token and client
-function auth() {
-    return client.authorizationPost({
-    redirect_uri: config.init.resourceServerAddress + '/callback',
-    scope: "openid uma_protection",
-    state: '1234',
-    nonce: '1234',
-    response_type: 'code',
-    response_mode: 'query'}); // => String (Valid HTML body)
-}
 
 /* #############################################################################
  *                                routing
@@ -71,8 +50,7 @@ function auth() {
 // to initiate a new openid process
 // http://localhost:3000/login
 app.get('/login', function (req, res) {
-  ies = req.query["scopes"];
-  res.send(auth());
+  res.send(core.auth(client, config.init.resourceServerAddress));
 });
 
 // callback endpoint (comming back from login with accesstoken)
@@ -96,7 +74,7 @@ app.get('/resource_sets', function(req, res) {
       resourceId = resp.replace(/\"|\[|\]/g, '');
       console.log("Available Resources with Resource_ID: " + resourceId);
       res.setHeader('Content-Type', 'text/html');
-      res.send(getHtml(config.init.resourceServerAddress + '/resource_sets/'
+      res.send(core.resourceHtml(config.init.resourceServerAddress + '/resource_sets/'
       + resourceId, resourceId));
     });
   } else {
@@ -270,30 +248,9 @@ app.get('/userInfo', function(request, res) {
 
 app.post('/measurementData', function(request, res) {
   var measurement = request.body.data;
-  fs.writeFile('measurementData.txt', measurement, function (err) {
-    if (err) throw err;
-      console.log('Saved file!');
-      res.end();
-    });
-
+  core.saveFile('measurementData.txt', measurement);
 });
 
 app.listen(config.init.resourceServerPort, function () {
   console.log('Listen on port ' + config.init.resourceServerPort);
 });
-
-/* #############################################################################
- *                              helper methods
- * ###########################################################################*/
-
-function getHtml(link, id) {
-  return `<!DOCTYPE html>
-<head>
-<title>Requesting Authorization</title>
-</head>
-<body>
-<p>ID: ` + id + `</p>
-<a href="` + link + `">Get Infomation for the ID</a>
-</body>
-</html>`;
-};

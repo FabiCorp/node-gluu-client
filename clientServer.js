@@ -3,11 +3,10 @@
  * ###########################################################################*/
 
 const express    = require('express');
-const Issuer     = require('openid-client').Issuer;
 const request    = require('request');
 const fs         = require('fs');
 const configIni  = require('config.ini');
-
+const core       = require('./core.js');
 
 /* #############################################################################
  *                                variables
@@ -32,18 +31,9 @@ var umaTicket;
 var rpt;
 // scopes from checkboxes
 var scopeQueries;
-// create Issuer
 
-const gluuIssuer = new Issuer({
-    issuer: config.init.gluuServerAddress,
-    authorization_endpoint: config.init.gluuServerAddress + '/oxauth/restv1/authorize/',
-    token_endpoint: config.init.gluuServerAddress + '/oxauth/restv1/token',
-    userinfo_endpoint: config.init.gluuServerAddress + '/oxauth/restv1/userinfo',
-    jwks_uri: config.init.gluuServerAddress + '/oxauth/restv1/jwks',
-    resource_registration_endpoint:	config.init.gluuServerAddress + '/oxauth/restv1/host/rsrc/resource_set',
-    permission_endpoint:	config.init.gluuServerAddress + '/oxauth/restv1/host/rsrc_pr',
-    rpt_endpoint: config.init.gluuServerAddress + '/oxauth/restv1/rpt/status'
-}); // => Issuer
+// create Issuer
+const gluuIssuer = core.getIssuer;
 
 // create client with given id and secret
 const client = new gluuIssuer.Client({
@@ -53,15 +43,7 @@ const client = new gluuIssuer.Client({
 
 // build the correct
 // TODO: What is nonce? => association between id-token and client
-function auth() {
-    return client.authorizationPost({
-    redirect_uri: config.init.clientServerAddress + '/callback',
-    scope: "openid uma_protection",
-    state: '1234',
-    nonce: '1234',
-    response_type: 'code',
-    response_mode: 'query'}); // => String (Valid HTML body)
-}
+
 
 /* #############################################################################
  *                                routing
@@ -71,7 +53,7 @@ function auth() {
 // http://localhost:3000/login
 app.get('/login', function (req, res) {
   ies = req.query["scopes"];
-  res.send(auth());
+  res.send(core.auth(client, config.init.clientServerAddress));
 });
 
 // callback endpoint (comming back from login with accesstoken)
@@ -87,52 +69,13 @@ app.get('/callback', function(request, res) {
   });
 });
 
-// endpoint to request resource sets information
-app.get('/resource_sets', function(req, res) {
-  if(tokenS.access_token){
-    client.resource_set(tokenS.access_token)
-    .then(function (resp) {
-      resourceId = resp.replace(/\"|\[|\]/g, '');
-      console.log("Available Resources with Resource_ID: " + resourceId);
-      res.setHeader('Content-Type', 'text/html');
-      res.send(getHtml(config.init.clientServerAddress + 'resource_sets/'
-      + resourceId, resourceId));
-    });
-  } else {
-      console.log("No AccessToken available!");
-  }
-});
-
-// id as query param in following path specification
-var id;
-app.param(['id'], function (req, res, next, value) {
-  id = value;
-  next();
-});
-
-// endpoint to request resource set information
-app.get('/resource_sets/:id', function(req, res) {
-  if(tokenS.access_token && id) {
-    client.resource_set(tokenS.access_token, id)
-    .then(function (resourceInfo) {
-      res.setHeader('Content-Type', 'application/json');
-      res.send(resourceInfo);
-      resourceInfo = JSON.parse(resourceInfo);
-      permissionBody.resource_id = resourceInfo["_id"];
-      permissionBody.resource_scopes = resourceInfo["resource_scopes"];
-      console.log("Successfully received information about Resource with ResourceID: " + id);
-    });
-  } else {
-    console.log("No ResourceId or AccessToken available!");
-  }
-});
-
 // uma token endpoint to request a requesting party token (RPT) and
 // a persisted claims token (PCT)
 app.get('/umaToken', function(req, res) {
   if(umaTicket){
     client.getUmaToken(umaTicket)
     .then(function (umaTokenSet) {
+      console.log(umaTokenSet);
       console.log("UMA-TokenSet received (RPT and PCT)");
       res.setHeader('Content-Type', 'application/json');
       res.send(umaTokenSet);
@@ -181,10 +124,7 @@ app.get('/getHearthRate', function(req, res) {
         }
     };
       request(options, function(err, res, body) {
-        fs.writeFile('hearthRate.txt', body, function (err) {
-          if (err) throw err;
-            console.log('Saved file!');
-          });
+        core.saveFile('hearthRate.txt', body);
           console.log('Request accepted, data received');
       });
       res.send("Saved file!");
@@ -196,6 +136,7 @@ app.get('/getHearthRate', function(req, res) {
       request(options, function(err, res, body) {
         umaTicket = JSON.parse(body).ticket;
         console.log("Received UMA-Ticket to request RPT");
+        console.log(umaTicket);
       });
       res.send("Received UMA-Ticket to request RPT")
   }
@@ -217,22 +158,11 @@ app.get('/userInfo', function(request, res) {
   }
 });
 
+app.get('/claimCallback', function(request, res) {
+  console.log('Claim Callback', res);
+  res.send("Claims");
+});
+
 app.listen(config.init.clientServerPort, function () {
   console.log('Listen on port ' + config.init.clientServerPort);
 });
-
-/* #############################################################################
- *                              helper methods
- * ###########################################################################*/
-
-function getHtml(link,id) {
-  return `<!DOCTYPE html>
-<head>
-<title>Requesting Authorization</title>
-</head>
-<body>
-<p>ID: ` + id + `</p>
-<a href="` + link + `">Get Infomation for the ID</a>
-</body>
-</html>`;
-}
