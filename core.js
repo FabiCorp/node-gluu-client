@@ -1,8 +1,9 @@
 
 const configIni  = require('config.ini');
 const Issuer     = require('openid-client').Issuer;
+const fs         = require('fs');
 
-var config = configIni.load('config.ini');
+const config = configIni.load('config.ini');
 
 var getIssuer = new Issuer({
   issuer: config.init.gluuServerAddress,
@@ -19,7 +20,6 @@ var saveFile = (fileName, fileData) => {
   fs.writeFile(fileName, fileData, function (err) {
     if (err) throw err;
       console.log('Saved file!');
-      res.end();
     });
 };
 

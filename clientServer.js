@@ -12,7 +12,7 @@ const core       = require('./core.js');
  *                                variables
  * ###########################################################################*/
 
-var config = configIni.load('config.ini');
+const config = configIni.load('config.ini');
 var app = express();
 // app.use(express.static(__dirname + '/spectral'));
 // disable rejection if unauthorized host TODO: find a better solution
@@ -75,16 +75,30 @@ app.get('/umaToken', function(req, res) {
   if(umaTicket){
     client.getUmaToken(umaTicket)
     .then(function (umaTokenSet) {
-      console.log(umaTokenSet);
-      console.log("UMA-TokenSet received (RPT and PCT)");
-      res.setHeader('Content-Type', 'application/json');
-      res.send(umaTokenSet);
-      rpt = (umaTokenSet).access_token;
+      if(typeof umaTokenSet.response !== 'undefined') {
+        if (umaTokenSet.response.statusCode == 403) {
+          console.log('Need Info, redirect to Claim Endpoint');
+          var parsedBody = JSON.parse(umaTokenSet.response.body);
+          var url = claims(parsedBody.redirect_user);
+          res.redirect(url);
+        }
+      } else if (typeof JSON.parse(umaTokenSet) !== 'undefined'){
+        console.log("UMA-TokenSet received (RPT and PCT)");
+        umaTokenSet = JSON.parse(umaTokenSet)
+        res.setHeader('Content-Type', 'application/json');
+        res.send(umaTokenSet);
+        rpt = (umaTokenSet).access_token;
+      }
+
     });
   } else {
       console.log("No UmaTicket available!");
   }
 });
+
+function claims (redirectUser) {
+  return redirectUser + "&claims_redirect_uri=http://localhost:3000/claimCallback";
+}
 
 app.get('/rpt', function(req, res) {
   if (tokenS && rpt) {
@@ -158,9 +172,9 @@ app.get('/userInfo', function(request, res) {
   }
 });
 
-app.get('/claimCallback', function(request, res) {
-  console.log('Claim Callback', res);
-  res.send("Claims");
+app.get('/claimCallback', function(req, res) {
+  res.send(req.query.ticket);
+  umaTicket = req.query.ticket;
 });
 
 app.listen(config.init.clientServerPort, function () {

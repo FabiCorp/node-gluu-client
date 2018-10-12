@@ -12,7 +12,7 @@ const core       = require('./core.js');
  *                                variables
  * ###########################################################################*/
 
-var config = configIni.load('config.ini');
+const config = configIni.load('config.ini');
 var app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -249,6 +249,7 @@ app.get('/userInfo', function(request, res) {
 app.post('/measurementData', function(request, res) {
   var measurement = request.body.data;
   core.saveFile('measurementData.txt', measurement);
+  res.end();
 });
 
 app.listen(config.init.resourceServerPort, function () {
