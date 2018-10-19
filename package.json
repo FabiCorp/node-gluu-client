@@ -1,0 +1,18 @@
+{
+  "name": "umaupdate",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Fabian Wenzel",
+  "license": "ISC",
+  "dependencies": {
+    "config.ini": "0.0.52",
+    "express": "^4.16.4",
+    "openid-client": "^2.4.4",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.2"
+  }
+}
