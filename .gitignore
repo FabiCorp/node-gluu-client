@@ -10,3 +10,6 @@
 *.tar.gz
 *.rar
 *.txt
+
+# Node Modules
+node_modules/

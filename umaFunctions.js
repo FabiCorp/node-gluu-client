@@ -188,7 +188,6 @@ deleteResource(accessToken, resourceId) {
   .catch(errorHandler.bind(this));
 }
 
-
 tokenGrant(body) {
   return this.authenticatedPost('token', { body: _.omitBy(body, _.isUndefined) })
     .then(response => (JSON.parse(response.body)));
