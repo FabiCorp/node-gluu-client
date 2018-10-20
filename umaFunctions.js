@@ -22,7 +22,6 @@ resource_set(accessToken, id) {
     path = issuer.resource_registration_endpoint + "/" + id;
   }
   return this.httpClient.get(path, issuer.httpOptions(httpOptions))
-  .then(expectResponse(200))
   .then((response) => {
     return response.body;
   })
@@ -50,7 +49,6 @@ permission(accessToken, resourceInfo) {
     headers,
     body: JSON.stringify(resourceInfo),
   }))
-    .then(expectResponse(200))
     .then(response => response.body)
     .catch(errorHandler.bind(this));
 }
@@ -158,7 +156,6 @@ registerResource(accessToken, resource) {
     headers,
     body: resource
   }))
-    .then(expectResponse(200))
     .then(response => response.body)
     .catch(errorHandler.bind(this));
   }
@@ -194,12 +191,10 @@ deleteResource(accessToken, resourceId) {
 
 tokenGrant(body) {
   return this.authenticatedPost('token', { body: _.omitBy(body, _.isUndefined) })
-    .then(expectResponse(200))
     .then(response => (JSON.parse(response.body)));
 }
 
 introGrant(options) {
   return this.authenticatedPost('rpt', this.issuer.httpOptions(options))
-    .then(expectResponse(200))
     .then(response => (JSON.parse(response.body)));
 }

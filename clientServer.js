@@ -22,6 +22,7 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 /* #############################################################################
  *                                openid variables
  * ###########################################################################*/
+ 
 const gluuIssuer = core.getIssuer;
 console.log('Set up issuer %s', gluuIssuer.issuer);
 

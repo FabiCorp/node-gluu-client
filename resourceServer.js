@@ -28,6 +28,7 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 /* #############################################################################
  *                                openid variables
  * ###########################################################################*/
+ 
 const gluuIssuer = core.getIssuer;
 console.log('Set up issuer %s', gluuIssuer.issuer);
 
@@ -55,6 +56,7 @@ var scopeQueries;
 /* #############################################################################
  *                               openid routing
  * ###########################################################################*/
+
  // to initiate a new openid process
  // http://localhost:3000/login
  app.get('/login', function (req, res) {
@@ -91,15 +93,16 @@ app.get('/userInfo', function(request, res) {
 /* #############################################################################
  *                             uma routing
  * ###########################################################################*/
+
  // endpoint to request resource sets information
- app.get('/resource_sets', function(req, res) {
+ app.get('/resourceSets', function(req, res) {
    if(tokenS.access_token){
      client.resource_set(tokenS.access_token)
      .then(function (resp) {
        resourceId = resp.replace(/\"|\[|\]/g, '');
        console.log("Available Resources with Resource_ID: " + resourceId);
        res.setHeader('Content-Type', 'text/html');
-       res.send(core.resourceHtml(config.init.resourceServerAddress + '/resource_sets/'
+       res.send(core.resourceHtml(config.init.resourceServerAddress + '/resourceSets/'
        + resourceId, resourceId));
      });
    } else {
@@ -115,7 +118,7 @@ app.get('/userInfo', function(request, res) {
  });
 
  // endpoint to request resource set information
- app.get('/resource_sets/:id', function(req, res) {
+ app.get('/resourceSets/:id', function(req, res) {
    if(tokenS.access_token && id) {
      client.resource_set(tokenS.access_token, id)
      .then(function (resourceInfo) {
