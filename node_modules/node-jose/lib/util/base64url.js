@@ -31,7 +31,7 @@ var base64url = {
     }
 
     if (!Buffer.isBuffer(buffer)) {
-      buffer = new Buffer(buffer, encoding);
+      buffer = Buffer.from(buffer, encoding);
     }
 
     return impl.encode(buffer);
