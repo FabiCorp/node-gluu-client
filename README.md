@@ -66,6 +66,7 @@ The measurement data from the MiBand2-Project must have reached successfully the
 4. /resourceSet and /resourceSet/[id] (to get the ResourceID for the UMA-Authorization Process)  
 
 After registering the Resource and having all relevant information:
+
 ### clientServer
 
 1. /login (to obtain PAT)
