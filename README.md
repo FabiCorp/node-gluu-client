@@ -12,8 +12,8 @@ the config.js file needs to be edited in the following lines:
 - var gluuServerAddess -> Host Address from the Gluu server
 - var umaRealm -> Host Address without http/https
 - var client-/resourceServerAddress/Port -> Host Address and Port for both servers
-- clientID and clientSecret for both servers (resource-/clientServer)
-(two oauth-clients need to be set up manually in the Gluu interface,
+- clientID and clientSecret for both servers (resource-/clientServer)  
+(two OpenID-clients need to be set up manually in the Gluu interface,  
 tutorial on how to correctly set up the clients in GluuClientSetup.md)
 
 Run both servers seperatly in Terminal:
@@ -61,7 +61,7 @@ The measurement data from the MiBand2-Project must have reached successfully the
 ### resourceServer
 
 1. /login (to obtain PAT)
-2. /registerResource (only call when not already registered)
+2. /registerResource (only call when not already registered, read GluuClientSetup.md)
 3. Login to the Gluu Interface and add an Authorization Policy (UMA_RPT_POLICY) to the hearthRate UMA scope
 4. /resourceSet and /resourceSet/[id] (to get the ResourceID for the UMA-Authorization Process)  
 
