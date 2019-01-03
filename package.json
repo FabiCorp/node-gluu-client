@@ -12,8 +12,10 @@
     "config.ini": "0.0.52",
     "ejs": "^2.6.1",
     "express": "^4.16.4",
+    "mongodb": "^3.1.10",
     "openid-client": "git+https://github.com/FabiCorp/node-openid-client.git",
     "request": "^2.88.0",
-    "request-promise": "^4.2.2"
+    "request-promise": "^4.2.2",
+    "socket.io": "^1.7.2"
   }
 }
