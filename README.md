@@ -1,3 +1,5 @@
+You should have read [Structure of Project](https://gitlab.iosb.fraunhofer.de/kastel/externalServer/blob/master/StructureOfProject.md) in the externalServer repository to succesfully build the project.  
+
 Client-/Resource Servers
 ==============================
 This project contains two node server applications (Resource- and Client-Server)  
@@ -9,14 +11,15 @@ the Authorization-Server ([-> Gluu-Docs](https://gluu.org/docs/ce/3.1.4/)).
 
 In order to run the two servers,   
 the config.js file needs to be edited in the following lines:
-- var gluuServerAddess -> Host Address from the Gluu server
-- var umaRealm -> Host Address without http/https
-- var client-/resourceServerAddress/Port -> Host Address and Port for both servers
+- var gluuServerAddess -> Host address from the Gluu server
+- var umaRealm -> Host address without http/https
+- var client-/resourceServer address and port -> Host address and port for both servers
 - clientID and clientSecret for both servers (resource-/clientServer)  
-(two OpenID-clients need to be set up manually in the Gluu interface,  
-tutorial on how to correctly set up the clients in GluuClientSetup.md)
+You get the clientIDs from the Gluu administration.   
+We need to fetch the two iNum-IDs which were generated in the GluuClientSetup instruction process.  
+The clientSecret should be "fraunhofer" unless you have chosen another at the gluu client creation.
 
-Run both servers seperatly in Terminal:
+Run both servers seperatly in terminal (at **externalServer/lib**):
 ```sh
 node resourceServer.js
 node clientServer.js
@@ -31,49 +34,23 @@ OpenID Workflow URLs (for both servers)
 ---
 
 - **/login** Trigger the OpenID Authorization Process to obtain PAT (Protection API Token, needed to access UMA relevant Gluu-Endpoints)
-- **/callback** This URL is called by the Gluu Authorization Server after */login* | Delievers TokenSet
+- **/callback** This URL is called by the Gluu Authorization Server as a callback from  **/login** | Delievers TokenSet
 - **/userInfo** Delievers OpenID-secured User-Information specified with chosen scopes
 
-UMA Flow URLs (resourceServer)
+UMA Flow URLs (resource server)
 ---
-- **/measurementData**  Endpoint for the MiBand2-MeasurementData (will be saved in measurementData.txt)
 - **/resourceRegistration** Registers HearthRateService with hearthRate scope (hardcoded)
 - **/resourceSets** Overwiew for all registered ResourceSet-IDs
 - **/resourceSets/[id]** Delievers information for a ResourceSet with the given ID
-- **/hearthRate** Endpoint for the clientServer to trigger the Resource Authorization Process and access the resource (hearth rate) by presenting an sufficent RPT (Requesting Party Token)
-- **/permission** Endpoint to obtain a UMA-Ticket (in general will be forwarded to clientServer)
+- **/hearthRate** Endpoint for the clientServer to trigger the Resource Authorization Process and access the resource (hearth rate) by presenting a RPT (Requesting Party Token) with sufficent rights
+- **/permission** Endpoint to obtain a UMA-Ticket (in general will be forwarded to client server)
 
-- **/resourceDeletion** (Work in Progress)
 
-UMA Flow URLs (clientServer)
+UMA Flow URLs (client server)
 ---
 
 - **/getHearthRate** Endpoint to communicate with resourceServer and start UMA-Authorization Process (creates hearthRate.txt after successfull resource request)
 - **/umaToken** Delievers a new TokenSet (RPT and PCT) in exchange for presenting an adequate UMA-Ticket
 
-Example UMA-Workflow
----
 
-The Gluu server needs to be up and running in order to start OpenID/UMA relevant interactions between the servers.
 
-The measurement data from the MiBand2-Project must have reached successfully the resource server and the **measurementData.txt** has been created.
-
-### resourceServer
-
-1. /login (to obtain PAT)
-2. /registerResource (only call when not already registered, read GluuClientSetup.md)
-3. Login to the Gluu Interface and add an Authorization Policy (UMA_RPT_POLICY) to the hearthRate UMA scope
-4. /resourceSet and /resourceSet/[id] (to get the ResourceID for the UMA-Authorization Process)  
-
-After registering the Resource and having all relevant information:
-
-### clientServer
-
-1. /login (to obtain PAT)
-2. /getHearthRate (to request authorization for requested resource)
-3. /umaToken (redirected to claims gathering)
-4. Fill in the Answers for the Claims Gathering Process : Country => USA | City => NY
-5. /umaToken (exchange UMA-Ticket to RPT)
-6. /getHearthRate (present RPT to gain access for requested Resource)
-
-Now the **hearthRate.txt** should be created with the same data as in **measurementData.txt**
