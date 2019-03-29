@@ -11,7 +11,7 @@ You could consider reading the [VM Preparation Guide](https://gluu.org/docs/ce/3
 
 To begin to installation process, follow the instructions here: [Installation-Guide](https://gluu.org/docs/ce/3.1.4/installation-guide/install/).
 
-This setup is made explicitly for the servers in this repository.  
+This setup is made explicitly for the servers in this project.  
 
 Create Clients
 ---------------
@@ -20,7 +20,7 @@ After finishing the setup from Gluu,
 the next step is to log into your Admin with your chosen password at the setup process and create two clients (for resource- and client server) in the Gluu Interface.  
 Therefore navigate to the OpenID Connect Tab in the Gluu Interface and click the Clients Tab on the left side.
 Now you need to edit following information when adding a new client:
-- Client Name: free to chose (for instance resourceServer and clientServer) (one resourceServer and one clientServer) 
+- Client Name: free to chose (for instance resourceServer and clientServer)
 - Client Secret: fraunhofer 
 - Add Login Redirect URI (Button): Host address of resource-/clientServer + "/callback"  
 (for example for client server "http://localhost:3000/callback" and for resource server "http://localhost:4000/callback") 
@@ -33,6 +33,19 @@ When you leave the dafault value you need to create a client each day/week/month
 Only for the client server must be additonally added:
 - Add Claim Redirect URIs: Host address of client server  + "/claimCallback"  
 (for example "http://localhost:3000/claimCallback") 
+
+Example: (insert your domain/IP, for testing purposes you can enter localhost)
+| Field                       | Node.js Client Server                 | Node.js Resource Server          | Java Client Server                     |
+|-----------------------------|---------------------------------------|----------------------------------|----------------------------------------|
+| Client Name                 | ClientServer                          | ResourceServer                   | ClientServer                           |
+| Client Secret               | fraunhofer                            | fraunhofer                       | fraunhofer                             |
+| Login Redirect URI          | http://{domain/IP}:3000/callback      | http://{domain/IP}:4000/callback | http://{domain/IP}:51130/callback      |
+| Scope                       | openid + uma_protection               | openid + uma_protection          | openid + uma_protection                |
+| Response Type               | code                                  | code                             | code                                   |
+| Grant Type                  | authorization_code                    | authorization_code               | authorization_code                     |
+| Client Registration Expires | press ">>" and pick any date          | press ">>" and pick any date     | press ">>" and pick any date           |
+| Claim Redirect URI          | http://{domain/IP}:3000/claimCallback | Not needed                       | http://{domain/IP}:51130/claimCallback |
+
 
 All options declared above are mandatory for this project,  
 you can experiment by adding other options and change to different Open-ID/UMA workflows in the source code.

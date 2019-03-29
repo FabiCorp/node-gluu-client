@@ -19,6 +19,20 @@ You get the clientIDs from the Gluu administration.
 We need to fetch the two iNum-IDs which were generated in the GluuClientSetup instruction process.  
 The clientSecret should be "fraunhofer" unless you have chosen another at the gluu client creation.
 
+Example configuration:
+| Key                   | Value                            |
+|-----------------------|----------------------------------|
+| gluuServerAddress     | https://153.96.9.227 (Gluu Host) |
+| umaRealm              | "153.96.9.227" (Gluu Host)       |
+| resourceServerAddress | http://{domain/IP}:4000          |
+| resourceServerPort    | 4000                             |
+| resourceServerId      | ResourceServer iNum from Gluu    |
+| resourceServerSecret  | fraunhofer                       |
+| clientServerAddress   | http://{domain/IP}:3000          |
+| clientServerPort      | 3000                             |
+| clientServerId        | ClientServer iNum from Gluu      |
+| clientServerSecret    | fraunhofer                       |
+
 Run both servers seperatly in terminal (at **externalServer/lib**):
 ```sh
 node resourceServer.js
@@ -42,15 +56,21 @@ UMA Flow URLs (resource server)
 - **/resourceRegistration** Registers HearthRateService with hearthRate scope (hardcoded)
 - **/resourceSets** Overwiew for all registered ResourceSet-IDs
 - **/resourceSets/[id]** Delievers information for a ResourceSet with the given ID
-- **/hearthRate** Endpoint for the clientServer to trigger the Resource Authorization Process and access the resource (hearth rate) by presenting a RPT (Requesting Party Token) with sufficent rights
+- **/hearthRate** Endpoint for the clientServer to trigger the Resource Authorization Process   
+and access the resource (hearth rate) by presenting a RPT (Requesting Party Token) with sufficent rights
 - **/permission** Endpoint to obtain a UMA-Ticket (in general will be forwarded to client server)
 
 
 UMA Flow URLs (client server)
 ---
 
-- **/getHearthRate** Endpoint to communicate with resourceServer and start UMA-Authorization Process (creates hearthRate.txt after successfull resource request)
+- **/getHearthRate** Endpoint to communicate with resourceServer and start UMA-Authorization Process   
+(creates hearthRate.txt after successfull resource request)
 - **/umaToken** Delievers a new TokenSet (RPT and PCT) in exchange for presenting an adequate UMA-Ticket
+
+Socket.IO
+---
+To pass data from the python script to the resourceServer, a socket via socket.io is configured to listen on "measurement".
 
 
 
