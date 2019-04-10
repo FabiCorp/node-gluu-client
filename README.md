@@ -20,6 +20,7 @@ We need to fetch the two iNum-IDs which were generated in the GluuClientSetup in
 The clientSecret should be "fraunhofer" unless you have chosen another at the gluu client creation.
 
 Example configuration:
+
 | Key                   | Value                            |
 |-----------------------|----------------------------------|
 | gluuServerAddress     | https://153.96.9.227 (Gluu Host) |
